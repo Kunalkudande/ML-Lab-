@@ -1,0 +1,101 @@
+!pip install mlxtend
+Requirement already satisfied: mlxtend in /usr/local/lib/python3.10/dist-packages (0.22.0)
+Requirement already satisfied: scipy>=1.2.1 in /usr/local/lib/python3.10/dist-packages (from mlxtend) (1.11.3)
+Requirement already satisfied: numpy>=1.16.2 in /usr/local/lib/python3.10/dist-packages (from mlxtend) (1.23.5)
+Requirement already satisfied: pandas>=0.24.2 in /usr/local/lib/python3.10/dist-packages (from mlxtend) (1.5.3)
+Requirement already satisfied: scikit-learn>=1.0.2 in /usr/local/lib/python3.10/dist-packages (from mlxtend) (1.2.2)
+Requirement already satisfied: matplotlib>=3.0.0 in /usr/local/lib/python3.10/dist-packages (from mlxtend) (3.7.1)
+Requirement already satisfied: joblib>=0.13.2 in /usr/local/lib/python3.10/dist-packages (from mlxtend) (1.3.2)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.10/dist-packages (from mlxtend) (67.7.2)
+Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0.0->mlxtend) (1.1.1)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0.0->mlxtend) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0.0->mlxtend) (4.43.1)
+Requirement already satisfied: kiwisolver>=1.0.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0.0->mlxtend) (1.4.5)
+Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0.0->mlxtend) (23.2)
+Requirement already satisfied: pillow>=6.2.0 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0.0->mlxtend) (9.4.0)
+Requirement already satisfied: pyparsing>=2.3.1 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0.0->mlxtend) (3.1.1)
+Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.10/dist-packages (from matplotlib>=3.0.0->mlxtend) (2.8.2
+Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.10/dist-packages (from pandas>=0.24.2->mlxtend) (2023.3.post1)
+Requirement already satisfied: threadpoolctl>=2.0.0 in /usr/local/lib/python3.10/dist-packages (from scikit-learn>=1.0.2->mlxtend) (3.2
+Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.10/dist-packages (from python-dateutil>=2.7->matplotlib>=3.0.0->mlxte
+import pandas as pd
+import csv
+from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.frequent_patterns import apriori , association_rules
+dataset = []
+with open("Market_Basket_Optimisation.csv") as file:
+reader = csv.reader(file,delimiter=',')
+for row in reader:
+dataset +=[row]
+dataset
+len(dataset)
+7501
+#transaction encoder converts the dataset in structured manner
+te = TransactionEncoder()
+x= te.fit_transform(dataset)
+x
+array([[False, True, True, ..., True, False, False],
+[False, False, False, ..., False, False, False],
+[False, False, False, ..., False, False, False],
+...,
+[False, False, False, ..., False, False, False],
+[False, False, False, ..., False, False, False],
+[False, False, False, ..., False, True, False]])
+df = pd.DataFrame(x , columns=te.columns_)
+len(te.columns_)
+120
+df.head()
+
+04/11/2023, 21:59 Untitled4.ipynb - Colaboratory
+
+https://colab.research.google.com/drive/1EnprBxRQFnVi_2FIJBlsumZaYReZaZhr#scrollTo=jCZ4ylDo4Enw&printMode=true 2/3
+
+asparagus almonds antioxydant
+
+juice asparagus avocado babies
+
+food bacon barbecue
+sauce
+black
+tea blueberries body
+spray
+bramble brownie
+0 False True True False True False False False False False False False Fals
+1 False False False False False False False False False False False False Fals
+2 False False False False False False False False False False False False Fals
+3 False False False False True False False False False False False False Fals
+4 False False False False False False False False False False False False Fals
+5 rows × 120 columns
+#1. Find frequent itemsets
+freq_itemset = apriori(df,min_support=0.01,use_colnames=True)
+
+support itemsets
+0 0.020397 (almonds)
+1 0.033329 (avocado)
+2 0.010799 (barbecue sauce)
+3 0.014265 (black tea)
+4 0.011465 (body spray)
+... ... ...
+252 0.011065 (ground beef, milk, mineral water)
+253 0.017064 (ground beef, spaghetti, mineral water)
+254 0.015731 (milk, spaghetti, mineral water)
+255 0.010265 (olive oil, spaghetti, mineral water)
+256 0.011465 (pancakes, spaghetti, mineral water)
+257 rows × 2 columns
+freq_itemset
+
+#Find the rules
+rules = association_rules(freq_itemset , metric="confidence",min_threshold=0.25)
+rules = rules[['antecedents','consequents','support','confidence']]
+
+antecedents consequents support confidence
+0 (avocado) (mineral water) 0.011598 0.348000
+1 (burgers) (eggs) 0.028796 0.330275
+2 (burgers) (french fries) 0.021997 0.252294
+3 (burgers) (mineral water) 0.024397 0.279817
+4 (cake) (mineral water) 0.027463 0.338816
+rules.head()
+
+antecedents consequents support confidence
+4 (cake) (mineral water) 0.027463 0.338816
+rules[rules['antecedents'] == {'cake'}]
